@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Refresh All</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="tableau-ui.min.js"></script>
+    <script src="tableau-extensions-1.latest.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #refresh {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="refresh" onclick="refreshAllDataSources()"></div>
+    <script>
+        tableau.extensions.initializeDialogAsync().then(() => {
+          ReactDOM.render(
+              React.createElement(TableauUI.Button, {
+                  kind: 'filledGreen'
+              }, 'Refresh All'),
+              document.getElementById('refresh')
+          );
+        })
+
+        function refreshAllDataSources() {
+            let dataSourceFetchPromises = [];
+            let dashboardDataSources = {};
+            const dashboard = tableau.extensions.dashboardContent.dashboard;
+
+            dashboard.worksheets.forEach(function (worksheet) {
+                dataSourceFetchPromises.push(worksheet.getDataSourcesAsync());
+            });
+
+            Promise.all(dataSourceFetchPromises).then(function (fetchResults) {
+                fetchResults.forEach(function (dataSourcesForWorksheet) {
+                    dataSourcesForWorksheet.forEach(function (dataSource) {
+                        if (!dashboardDataSources[dataSource.id]) {
+                            dashboardDataSources[dataSource.id] = dataSource;
+                            dataSource.refreshAsync();
+                        }
+                    });
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>
