@@ -1,3 +1,5 @@
+![Working](https://img.shields.io/badge/Status-Working-Green)
+
 Refresh All Data Sources
 =================
 
